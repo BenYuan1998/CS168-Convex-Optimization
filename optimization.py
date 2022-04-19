@@ -114,7 +114,7 @@ def NewtonMethodWithBackTracking(func, ComputeGradient, ComputeHessian, init_x, 
     opitmal_value = func(optimal_point)
     return optimal_point, opitmal_value, NewtonDecrements, num_iter
 
-# a modified log function as a workaround for the DvisionbyZero error
+# a modified log function as a workaround for the DivisionbyZero error
 def safe_ln(x):
     if x <= 0:
         return 0
