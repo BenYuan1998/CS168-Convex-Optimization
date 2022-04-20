@@ -32,7 +32,7 @@ def BackTrackingLineSearch(func, current_x, current_gradient, delta_x, alpha = 0
     t: step size
     """
     t = 1 # initialize step size
-    while func(current_x + t * delta_x) > func(current_x) + alpha * t * np.dot(current_gradient, delta_x): # guarantees that funct(x^{k+1}) <= funct(x^{k})
+    while func(current_x + t * delta_x) > func(current_x) + alpha * t * np.dot(current_gradient.T, delta_x): # guarantees that funct(x^{k+1}) <= funct(x^{k})
         t = beta * t # update t by backtracking
     return t
 
@@ -61,6 +61,7 @@ def GradientDescentWithBackTracking(func, ComputeGradient, init_x, epsilon = 1e-
     while norm_gradient >= epsilon:
         current_gradient = ComputeGradient(current_x)
         norm_gradient = norm(current_gradient)
+        print(norm_gradient)
         norms_gradient.append(norm_gradient)
         delta_x = -current_gradient.reshape(-1, 1) # delta_x is set to be the negaive of the gradient
         t = BackTrackingLineSearch(func = func, current_x = current_x, current_gradient = current_gradient, delta_x = delta_x)
@@ -103,9 +104,10 @@ def NewtonMethodWithBackTracking(func, ComputeGradient, ComputeHessian, init_x, 
                 inv_hessian = inv(current_hessian)
             except:
                 inv_hessian = pinv(current_hessian)
-        NewtonDecrement = np.dot(current_gradient, np.dot(inv_hessian, current_gradient))
-        NewtonDecrements.append(NewtonDecrement)
         delta_x = - np.dot(inv_hessian, current_gradient).reshape(-1, 1)
+        NewtonDecrement = np.dot(current_gradient.T, -delta_x)[0]
+        print(NewtonDecrement)
+        NewtonDecrements.append(NewtonDecrement)
         t = BackTrackingLineSearch(func = func, current_x = current_x, current_gradient = current_gradient, delta_x = delta_x)
         current_x += t * delta_x # update current_x
         iteration += 1
@@ -114,7 +116,7 @@ def NewtonMethodWithBackTracking(func, ComputeGradient, ComputeHessian, init_x, 
     opitmal_value = func(optimal_point)
     return optimal_point, opitmal_value, NewtonDecrements, num_iter
 
-# a modified log function as a workaround for the DivisionbyZero error
+# a modified log function as a workaround for the DvisionbyZero error
 def safe_ln(x):
     if x <= 0:
         return 0
