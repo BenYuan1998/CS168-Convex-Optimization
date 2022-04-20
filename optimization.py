@@ -32,10 +32,13 @@ def BackTrackingLineSearch(func, current_x, current_gradient, delta_x, alpha = 0
     t: step size
     """
     t = 1 # initialize step size
+    #print(func(current_x + t * delta_x))
+    #print(func(current_x) + alpha * t * np.dot(current_gradient.T, delta_x))
     while func(current_x + t * delta_x) > func(current_x) + alpha * t * np.dot(current_gradient.T, delta_x): # guarantees that funct(x^{k+1}) <= funct(x^{k})
         t = beta * t # update t by backtracking
     return t
-
+    
+    
 def GradientDescentWithBackTracking(func, ComputeGradient, init_x, epsilon = 1e-5):
     """
     Parameters
@@ -50,9 +53,11 @@ def GradientDescentWithBackTracking(func, ComputeGradient, init_x, epsilon = 1e-
     -------
     optimal_point : the optimal point determined by the algorithm
     optimal_value : the corresponding optimal value of the objective function
+    funcvals : a list that records the function values before convergence
     norms_gradient : a list that records the norm of the gradient at each iteration before convergence
     num_iter : a list that records the numbers of iteration needed for convergence
     """
+    funcvals = list()
     num_iter = list()
     iteration = 0 # initialize iteration
     norms_gradient = list()
@@ -61,16 +66,17 @@ def GradientDescentWithBackTracking(func, ComputeGradient, init_x, epsilon = 1e-
     while norm_gradient >= epsilon:
         current_gradient = ComputeGradient(current_x)
         norm_gradient = norm(current_gradient)
-        print(norm_gradient)
+        #print(norm_gradient)
         norms_gradient.append(norm_gradient)
         delta_x = -current_gradient.reshape(-1, 1) # delta_x is set to be the negaive of the gradient
         t = BackTrackingLineSearch(func = func, current_x = current_x, current_gradient = current_gradient, delta_x = delta_x)
         current_x += t * delta_x # update current_x
+        funcvals.append(func(current_x))
         iteration +=1
         num_iter.append(iteration)
     optimal_point = current_x
     optimal_value = func(optimal_point)
-    return optimal_point, optimal_value, norms_gradient, num_iter
+    return optimal_point, optimal_value, funcvals, norms_gradient, num_iter
 
 def NewtonMethodWithBackTracking(func, ComputeGradient, ComputeHessian, init_x, epsilon = 1e-5):
     """
@@ -87,9 +93,11 @@ def NewtonMethodWithBackTracking(func, ComputeGradient, ComputeHessian, init_x, 
     -------
     optimal_point : the optimal point determined by the algorithm
     optimal_value : the corresponding optimal value of the objective function
+    funcvals : a list that records the function values before convergence
     NetwonDecrements : a list that records the Newton decrement at each iteration before convergence
     num_iter : a list that records the numbers of iteration needed for convergence
     """
+    funcvals = list()
     num_iter = list()
     iteration = 0 # initialize iteration
     NewtonDecrements = list()
@@ -104,12 +112,13 @@ def NewtonMethodWithBackTracking(func, ComputeGradient, ComputeHessian, init_x, 
                 inv_hessian = inv(current_hessian)
             except:
                 inv_hessian = pinv(current_hessian)
-        delta_x = - np.dot(inv_hessian, current_gradient).reshape(-1, 1)
+        delta_x = -np.dot(inv_hessian, current_gradient).reshape(-1, 1)
         NewtonDecrement = np.dot(current_gradient.T, -delta_x)[0]
-        print(NewtonDecrement)
+        #print(NewtonDecrement)
         NewtonDecrements.append(NewtonDecrement)
         t = BackTrackingLineSearch(func = func, current_x = current_x, current_gradient = current_gradient, delta_x = delta_x)
         current_x += t * delta_x # update current_x
+        funcvals.append(func(current_x))
         iteration += 1
         num_iter.append(iteration)
     optimal_point = current_x
